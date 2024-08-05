@@ -8,8 +8,8 @@ import org.springframework.data.relational.core.mapping.Table;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Table("taskUser")
+@Table("taskuser")
 public class TaskUsersEntity {
-    @Column("idTask") private Long idTask;
-    @Column("idUser") private Long idUser;
+    @Column("idtask") private Long idTask;
+    @Column("iduser") private Long idUser;
 }

@@ -35,7 +35,7 @@ public class TaskTest {
     @Test
     public void updateTask() throws Exception {
         UpdateTaskDTO updateTaskDTO = new UpdateTaskDTO(
-                3L,
+                4L,
                 "hola mundo",
                 "rios",
                 LocalDateTime.now()
@@ -45,6 +45,6 @@ public class TaskTest {
     }
     @Test
     public void deleteTask() throws Exception {
-        Assertions.assertEquals("The task was elimited", taskService.deleteTask(1L).block());
+        Assertions.assertEquals("The task was elimited", taskService.deleteTask(8L).block());
     }
 }
