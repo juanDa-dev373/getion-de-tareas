@@ -45,6 +45,6 @@ public class TaskTest {
     }
     @Test
     public void deleteTask() throws Exception {
-        Assertions.assertEquals("The task was elimited", taskService.deleteTask(8L).block());
+        Assertions.assertEquals("The task was elimited", taskService.deleteTask(9L).block());
     }
 }
