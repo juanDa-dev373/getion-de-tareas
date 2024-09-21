@@ -1,4 +1,4 @@
-package co.gestiondetareas.gestiondetareas.application.serviceTest;
+package co.gestiondetareas.gestiondetareas.application.service;
 
 import co.gestiondetareas.gestiondetareas.application.port.input.UserService;
 import co.gestiondetareas.gestiondetareas.domain.dtos.*;
@@ -9,8 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.core.publisher.Mono;
 
+import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
-public class UserServiceTest {
+public class UserServiceImplTest {
     @Autowired
     private UserService userService;
     @Test
@@ -19,7 +20,7 @@ public class UserServiceTest {
                 "David",
                 "Fonseca",
                 21,
-                "juan7@gmail.com",
+                "juan8@gmail.com",
                 "1234"
         );
         Mono<User> mono = userService.registerUser(registerUserDTO);
@@ -27,15 +28,16 @@ public class UserServiceTest {
     }
     @Test
     public void loginTest() throws Exception {
-        LoginDTO loginDTO = new LoginDTO("juan1@gmail.com", "juan123");
-        Mono<User> mono = userService.login(loginDTO);
-        Assertions.assertEquals(loginDTO.email(), mono.block().getEmail());
+        LoginDTO loginDTO = new LoginDTO("juan8@gmail.com", "1234");
+        Mono<String> mono = userService.login(loginDTO);
+        System.out.println(mono.block());
+        assertNotNull(mono.block());
     }
     @Test
     public void passwordRecovery() throws Exception {
         PasswordRecovery passwordRecovery = new PasswordRecovery(
-          "juan1@gmail.com",
-          "juan123"
+                "juan1@gmail.com",
+                "juan123"
         );
         Mono<User> userMono = userService.recoveryPassword(passwordRecovery);
         Assertions.assertEquals(passwordRecovery.newPassword(), userMono.block().getPassword());
@@ -43,7 +45,7 @@ public class UserServiceTest {
     @Test
     public void addTaskToUserTest() throws Exception {
         AddTaskToUserDTO addTaskToUserDTO = new AddTaskToUserDTO(
-            4L,
+                4L,
                 3L,
                 2L
         );

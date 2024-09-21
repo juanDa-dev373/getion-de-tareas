@@ -8,6 +8,8 @@ import co.gestiondetareas.gestiondetareas.domain.dtos.*;
 import co.gestiondetareas.gestiondetareas.domain.model.Task;
 import co.gestiondetareas.gestiondetareas.domain.model.TaskUsers;
 import co.gestiondetareas.gestiondetareas.domain.model.User;
+import co.gestiondetareas.gestiondetareas.infrastructure.adapters.output.JWT.Jwt;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 @Service
@@ -15,10 +17,12 @@ public class UserServiceImpl implements UserService {
     private final UserPort userPort;
     private final TaskPort taskPort;
     private final TaskUsersPort taskUsersPort;
-    public UserServiceImpl(UserPort userPort, TaskPort taskPort, TaskUsersPort taskUsersPort) {
+    private final Jwt jwt;
+    public UserServiceImpl(UserPort userPort, TaskPort taskPort, TaskUsersPort taskUsersPort, Jwt jwt) {
         this.userPort = userPort;
         this.taskPort = taskPort;
         this.taskUsersPort = taskUsersPort;
+        this.jwt = jwt;
     }
 
     @Override
@@ -26,7 +30,7 @@ public class UserServiceImpl implements UserService {
         User user = new User();
         user.setLastName(registerUserDTO.lastName());
         user.setRole("client");
-        user.setPassword(registerUserDTO.password());
+        user.setPassword(encoderPassword(registerUserDTO.password()));
         user.setEmail(registerUserDTO.email());
         user.setAge(registerUserDTO.age());
         user.setName(registerUserDTO.name());
@@ -36,11 +40,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Mono<User> login(LoginDTO loginDTO) throws Exception {
-        return userPort.findByEmail(loginDTO.email()).filter(
-                u-> loginDTO.password().equals(u.getPassword())
+    public Mono<String> login(LoginDTO loginDTO) throws Exception {
+        return userPort.findByEmail(loginDTO.email()).flatMap(
+                u ->{
+                    if(!isCorrectPassword(loginDTO.password(), u.getPassword())){
+                        return Mono.error(new Exception("the password or email was incorrect"));
+                    }
+                    return jwt.token(u);
+                }
         ).switchIfEmpty(
-                Mono.error(new Exception("The password or email invalidated"))
+                Mono.error(new Exception("The user wasn´t found"))
         );
     }
 
@@ -82,5 +91,13 @@ public class UserServiceImpl implements UserService {
     public Mono<String> deleteTaskFromUser(DeleteTaskFromUserDTO deleteTaskFromUserDTO) throws Exception {
         TaskUsers taskUsers = new TaskUsers(deleteTaskFromUserDTO.idTask(), deleteTaskFromUserDTO.idUser());
         return taskUsersPort.delete(taskUsers);
+    }
+    private String encoderPassword(String password){
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        return encoder.encode(password);
+    }
+    private boolean isCorrectPassword(String password, String passwordEncode){
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        return encoder.matches(password, passwordEncode);
     }
 }
